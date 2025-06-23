@@ -1,0 +1,148 @@
+<!-- 📦 HTML -->
+<div id="wrap">
+  <div id="title">OBJECTIF FOLLOWERS</div>
+  <div class="goal-cont">
+    <div id="goal-bar">
+      <div class="goal-numbers">
+        <span id="goal-progress">--%</span>
+        <div id="goal-start"></div>
+      </div>
+    </div>
+  </div>
+  <div id="bottom-text">
+    <span id="goal-current">0</span>
+    <div id="goal-end-date"></div>
+    <span id="goal-total">0</span>
+  </div>
+</div>
+
+<!-- 🎨 CSS -->
+<style>
+  html, body {}
+  #wrap {
+    font-family: "EB Garamond", serif;
+    font-weight: 800;
+    font-size: 11px;
+    padding: 10px 20px;
+  }
+  #title {
+    color: #ffffff !important;
+    text-shadow: 0px 4px 8px #000000;
+    text-align: center;
+    font-size: 22px;
+    font-weight: 800;
+    text-transform: uppercase;
+    position: relative;
+    z-index: 5;
+  }
+  .goal-cont {
+    height: 48px;
+    width: 100%;
+    position: relative;
+    border-width: 4px;
+    border-style: solid;
+    border-color: #000000;
+    background: #732514;
+    border-radius: 10px;
+    box-shadow: 0px 15px 45px 0px rgba(0, 0, 0, 0.62) inset;
+    overflow: hidden;
+    animation: firemove 2s ease infinite;
+  }
+  .goal-cont:before {
+    content: '';
+    position: absolute;
+    left: 0px;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(180deg, #140F12 0%, #140f1200 100%);
+  }
+  @keyframes firemove {
+    0% { background: #732514; }
+    20% { background: #1d0905; }
+    40% { background: #975e25; }
+    60% { background: #d65f45; }
+    80% { background: #1d0905; }
+    100% { background: #732514; }
+  }
+  #goal-bar {
+    height: 100%;
+    position: relative;
+  }
+  #goal-start {
+    background: linear-gradient(90deg, #D9240D 8.5%, #FB9811 38.5%, #FFE57A 61.5%, #FFEFD0 84.5%, #FFF 100%);
+    height: 50%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 40;
+    border-radius: 1em;
+    transform: translate(0%, 50%);
+    margin: 0 0.5em;
+    filter: blur(2px);
+    box-shadow: 0px 4px 8px #00000075;
+  }
+  .goal-numbers {
+    position: relative;
+    font-size: 28px;
+    height: 100%;
+  }
+  #goal-progress {
+    position: absolute;
+    text-align: center;
+    vertical-align: middle;
+    display: block;
+    width: 100%;
+    z-index: 50;
+    line-height: 48px;
+    color: #ffffff !important;
+    text-shadow: 0px 0px 8px #000000;
+  }
+  #goal-end-date {
+    text-align: center;
+    display: inline-block;
+  }
+  #goal-total {
+    float: right;
+    display: inline-block;
+  }
+  #goal-current {
+    float: left;
+    display: inline-block;
+  }
+  #bottom-text {
+    position: relative;
+    width: 100%;
+    display: inline-block;
+    color: rgb(255, 255, 255);
+    font-size: 18px;
+    text-align: center;
+    text-transform: uppercase;
+    text-shadow: 0 0 1px #222;
+  }
+</style>
+
+<!-- 🔌 WebSocket + JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.4.1/socket.io.min.js"></script>
+<script>
+  const socketToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbiI6IkY0NDg1ODhBODE1OTVDMkI0NDZGQzEyM0U3NEQyMjJBNUUwNDU2QTIxOEY4NEE4M0YzRTU3MERFRDdFODZFQ0E3ODc4MTgxMzcxQTg4MzcwRTczQzc2Q0UzNDc4MzZCN0RFMzQ0NjA4NkQzQzExQkQ3NTJDNDVDQTQyODJEMEVEMUU0MUEwQ0YzNjZBQUFDNDNGMTlFNDcxNDdCMjFFNDUzODVGRUQ3MTgwNDA0NTQ5NDM5QTEzOUIxQzk5RDU1NkRFM0JBRDQ5RjYzODM3NEVBREFBRjQxODBENTdGNDFCQ0M4MDRFODA0RjE5QTI4MjgyMTY5MERBQTMiLCJyZWFkX29ubHkiOnRydWUsInByZXZlbnRfbWFzdGVyIjp0cnVlLCJ0d2l0Y2hfaWQiOiIxMTgwMzA5Nzk1Iiwic3RyZWFtbGFic19pZCI6IjczNDI4NjExMjQyMTczMzk5MDQifQ.6Vq7fu9f7RvAGh6XnpJ2hUnb4JuwB-dFD5yoxRu9gbw";
+  const socket = io(`wss://sockets.streamlabs.com?token=${socketToken}`);
+
+  socket.on("connect", () => {
+    console.log("✅ Connecté au WebSocket Streamlabs");
+  });
+
+  socket.on("event", (data) => {
+    if (!data.for && data.type === "goal") {
+      const goal = data.message;
+      const current = goal.amount || 0;
+      const total = goal.goal || 1;
+      const percent = Math.floor((current / total) * 100);
+
+      document.getElementById("goal-current").innerText = current;
+      document.getElementById("goal-total").innerText = total;
+      document.getElementById("goal-progress").innerText = `${percent}%`;
+      document.getElementById("goal-start").style.width = `${percent}%`;
+    }
+  });
+</script>
